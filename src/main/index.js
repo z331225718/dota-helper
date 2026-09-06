@@ -68,7 +68,29 @@ function registerIpcHandlers() {
   const overlayOnly = () => [overlayWindow];
 
   handle('state:get', appWindows, () => displayViewModel());
+  handle('catalog:get', mainOnly, () => adviceService.getCatalog());
   handle('setup:get', mainOnly, () => setupSummary());
+
+  handle('advice:set-role', mainOnly, (role) => {
+    adviceService.setRole(role);
+    const viewModel = displayViewModel();
+    sendViewModel(gsiServer.getViewModel());
+    return viewModel;
+  });
+
+  handle('roster:set-slot', mainOnly, (side, index, heroId) => {
+    adviceService.setRosterSlot(side, index, heroId);
+    const viewModel = displayViewModel();
+    sendViewModel(gsiServer.getViewModel());
+    return viewModel;
+  });
+
+  handle('roster:clear', mainOnly, () => {
+    adviceService.clearRoster();
+    const viewModel = displayViewModel();
+    sendViewModel(gsiServer.getViewModel());
+    return viewModel;
+  });
 
   handle('setup:choose-directory', mainOnly, async () => {
     const result = await dialog.showOpenDialog(mainWindow, {
@@ -276,6 +298,17 @@ async function start() {
   gsiServer = new GsiServer({ token: settingsStore.getOrCreateToken(), port: 4000 });
   setupSummary();
   adviceService = new AdviceService({ getDotaRoot: () => selectedDotaRoot });
+
+  if (selectedDotaRoot) {
+    const currentConfig = getConfigStatus(selectedDotaRoot);
+    if (currentConfig.managed) {
+      try {
+        installConfig(selectedDotaRoot, settingsStore.getOrCreateToken(), 4000);
+      } catch {
+        // A stale config should not prevent the local listener or UI from starting.
+      }
+    }
+  }
 
   try {
     await gsiServer.start();

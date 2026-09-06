@@ -189,6 +189,7 @@ function buildConfig(token, port = 4000) {
     "hero" "1"
     "abilities" "1"
     "items" "1"
+    "draft" "1"
   }
 }
 `;

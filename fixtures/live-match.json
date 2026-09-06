@@ -52,6 +52,16 @@
     "aghanims_scepter": false,
     "aghanims_shard": false
   },
+  "draft": {
+    "team2": {
+      "pick0_id": 44,
+      "pick1_id": 5
+    },
+    "team3": {
+      "pick0_id": 21,
+      "pick1_id": 32
+    }
+  },
   "items": {
     "slot0": { "name": "item_power_treads", "can_cast": true, "cooldown": 0, "charges": 0 },
     "slot1": { "name": "item_bfury", "can_cast": false, "cooldown": 0, "charges": 0 },

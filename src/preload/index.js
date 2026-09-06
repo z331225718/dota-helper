@@ -4,6 +4,10 @@ const { contextBridge, ipcRenderer } = require('electron');
 
 const api = Object.freeze({
   getState: () => ipcRenderer.invoke('state:get'),
+  getCatalog: () => ipcRenderer.invoke('catalog:get'),
+  setAdviceRole: (role) => ipcRenderer.invoke('advice:set-role', role),
+  setRosterSlot: (side, index, heroId) => ipcRenderer.invoke('roster:set-slot', side, index, heroId),
+  clearRoster: () => ipcRenderer.invoke('roster:clear'),
   getSetup: () => ipcRenderer.invoke('setup:get'),
   chooseDotaDirectory: () => ipcRenderer.invoke('setup:choose-directory'),
   selectDotaDirectory: (dotaRoot) => ipcRenderer.invoke('setup:select', dotaRoot),

@@ -87,18 +87,33 @@
             <div class="inventory-grid" id="inventory-grid"></div>
           </article>
 
+          <article class="panel roster-panel">
+            <header class="panel-header">
+              <span>双方阵容</span>
+              <div class="panel-tools"><code id="roster-coverage">已确认 0 / 10</code><button class="icon-button small" id="clear-roster" type="button" title="清空手动阵容" aria-label="清空手动阵容"><i data-lucide="rotate-ccw"></i></button></div>
+            </header>
+            <div class="roster-editor">
+              <section><div class="roster-side-title"><span>我方</span><small id="ally-count">0 / 5</small></div><div class="roster-slots" id="ally-roster"></div></section>
+              <section><div class="roster-side-title enemy"><span>对方</span><small id="enemy-count">0 / 5</small></div><div class="roster-slots" id="enemy-roster"></div></section>
+            </div>
+            <p class="roster-note" id="roster-note">正在等待 Dota 阵容数据</p>
+            <datalist id="hero-options"></datalist>
+          </article>
+
           <article class="panel advice-panel">
-            <header class="panel-header"><span>实时建议</span><code>本地离线</code></header>
+            <header class="panel-header"><span>实时建议</span><label class="role-control"><span>分路</span><select id="role-select" aria-label="选择分路"><option value="auto">自动判断</option></select></label></header>
             <div class="advice-grid">
               <section>
                 <span class="advice-label"><i data-lucide="shopping-cart"></i>下一件装备</span>
                 <div class="recommended-items" id="recommended-items"><span class="advice-empty">等待英雄数据</span></div>
-                <small id="item-advice-source">读取游戏内当前默认出装</small>
+                <small id="item-advice-source">等待近期高分局构筑数据</small>
+                <div class="counter-items" id="counter-items"></div>
+                <small class="matchup-note" id="matchup-note"></small>
               </section>
               <section>
                 <span class="advice-label"><i data-lucide="sparkles"></i>下一级加点</span>
                 <strong class="recommended-skill" id="recommended-skill">等待技能数据</strong>
-                <small id="skill-advice-reason">仅对已验证的英雄给出建议</small>
+                <small id="skill-advice-reason">等待当前英雄和分路</small>
               </section>
             </div>
           </article>

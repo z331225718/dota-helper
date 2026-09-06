@@ -23,7 +23,7 @@ function createItemRow(item, index) {
   order.className = 'item-index';
   order.textContent = String(index + 1).padStart(2, '0');
   name.textContent = item.displayName;
-  note.textContent = index === 0 ? '优先' : '后续';
+  note.textContent = item.contextual ? '针对' : item.averageMinute >= 0 ? `${Math.round(item.averageMinute)}m` : index === 0 ? '优先' : '后续';
   row.append(order, name, note);
   return row;
 }
@@ -40,7 +40,7 @@ function createAbilityRow(ability, recommendedName) {
 }
 
 function render(viewModel) {
-  const { status, snapshot, advice } = viewModel ?? {};
+  const { status, snapshot, advice, roster } = viewModel ?? {};
   const live = Boolean(status?.connected && snapshot);
   dom['overlay-shell'].dataset.state = status?.error ? 'error' : live ? 'live' : 'waiting';
   dom['connection-label'].textContent = status?.error ?? (live ? '数据已连接' : status?.listening ? '等待 Dota 2' : '监听未启动');
@@ -52,9 +52,12 @@ function render(viewModel) {
   dom['hero-level'].textContent = number(snapshot.hero.level);
   dom['match-clock'].textContent = formatClock(snapshot.map.clock_time ?? snapshot.map.game_time);
   dom.gold.textContent = number(snapshot.player.gold).toLocaleString('zh-CN');
+  dom['enemy-coverage'].textContent = `${number(roster?.enemyCount)} / 5`;
+  const enemyNames = roster?.enemies?.filter(Boolean).map((hero) => hero.nameZh) ?? [];
+  dom['enemy-heroes'].textContent = enemyNames.length ? enemyNames.join('、') : '请在主窗口补全阵容';
 
   const itemAdvice = advice?.items;
-  dom['item-phase'].textContent = itemAdvice ? `${itemAdvice.phaseLabel} · 本地` : '暂无数据';
+  dom['item-phase'].textContent = itemAdvice ? `${itemAdvice.phaseLabel} · ${itemAdvice.role?.label ?? '自动'}` : '暂无数据';
   const recommendedItems = itemAdvice?.recommended ?? [];
   if (recommendedItems.length) {
     dom['item-list'].replaceChildren(...recommendedItems.map(createItemRow));
@@ -64,8 +67,16 @@ function render(viewModel) {
     empty.textContent = '未找到当前英雄的本地推荐出装';
     dom['item-list'].replaceChildren(empty);
   }
+  const counters = itemAdvice?.counters ?? [];
   const alternatives = itemAdvice?.alternatives?.map((item) => item.displayName) ?? [];
-  dom['item-alternatives'].textContent = alternatives.length ? `局势备选：${alternatives.join('、')}` : '';
+  dom['item-alternatives'].classList.toggle('has-counter', counters.length > 0);
+  dom['item-alternatives'].textContent = counters.length
+    ? `针对阵容：${counters.map((item) => `${item.displayName}（${item.threat}）`).join('、')}`
+    : alternatives.length ? `局势备选：${alternatives.join('、')}` : '';
+  const hardest = itemAdvice?.matchups?.[0];
+  dom['matchup-warning'].textContent = hardest
+    ? `对 ${hardest.heroName}：${hardest.level}，校正胜率 ${Math.round(hardest.winRate * 100)}% / ${hardest.matches} 场`
+    : '';
 
   const skill = advice?.skill;
   dom['skill-title'].textContent = skill?.title ?? '暂无已验证加点';
@@ -74,8 +85,9 @@ function render(viewModel) {
   const visibleAbilities = (skill?.abilities ?? []).filter((ability) => !ability.innate).slice(0, 6);
   dom['ability-list'].replaceChildren(...visibleAbilities.map((ability) => createAbilityRow(ability, skill?.ability)));
 
-  const sources = [itemAdvice?.source, skill?.source].filter(Boolean);
-  dom['advice-source'].textContent = sources.length ? `${sources.join(' · ')}。建议会随版本变化，请结合阵容判断。` : '本地离线数据';
+  dom['advice-source'].textContent = itemAdvice?.source
+    ? `${itemAdvice.source} · 快照 ${itemAdvice.sourceDate}。仅基于已确认阵容。`
+    : '本地离线数据';
 }
 
 let locked = false;

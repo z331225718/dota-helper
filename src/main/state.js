@@ -9,7 +9,7 @@ const HERO_FIELDS = [
 ];
 
 const PLAYER_FIELDS = [
-  'steamid', 'accountid', 'name', 'activity', 'kills', 'deaths', 'assists',
+  'activity', 'kills', 'deaths', 'assists',
   'last_hits', 'denies', 'kill_streak', 'team_name', 'gold', 'gold_reliable',
   'gold_unreliable', 'gpm', 'xpm'
 ];
@@ -49,11 +49,52 @@ function normalizeCollection(source, fields) {
     .filter((entry) => typeof entry.name === 'string' && entry.name.length > 0);
 }
 
+function normalizeDraftTeam(source) {
+  if (!isRecord(source)) return [];
+  const picks = new Map();
+  for (const [key, value] of Object.entries(source)) {
+    const flatMatch = key.match(/^pick(\d+)_id$/);
+    if (flatMatch && Number.isFinite(Number(value))) picks.set(Number(flatMatch[1]), Number(value));
+    const nestedMatch = key.match(/^pick(\d+)$/);
+    if (nestedMatch && isRecord(value) && Number.isFinite(Number(value.id))) {
+      picks.set(Number(nestedMatch[1]), Number(value.id));
+    }
+  }
+  return [...picks.entries()]
+    .sort(([left], [right]) => left - right)
+    .map(([slot, heroId]) => ({ slot, heroId }));
+}
+
+function normalizeSpectatorTeam(source) {
+  if (!isRecord(source)) return [];
+  return Object.entries(source)
+    .filter(([key, value]) => /^player\d+$/.test(key) && isRecord(value))
+    .map(([key, value]) => ({ slot: Number(key.replace('player', '')), heroId: Number(value.id) }))
+    .filter((entry) => Number.isFinite(entry.heroId) && entry.heroId > 0)
+    .sort((left, right) => left.slot - right.slot);
+}
+
+function normalizeRosterPayload(payload) {
+  const draft = isRecord(payload.draft) ? payload.draft : {};
+  const heroes = isRecord(payload.hero) ? payload.hero : {};
+  return {
+    draft: {
+      radiant: normalizeDraftTeam(draft.team2),
+      dire: normalizeDraftTeam(draft.team3)
+    },
+    spectator: {
+      radiant: normalizeSpectatorTeam(heroes.team2),
+      dire: normalizeSpectatorTeam(heroes.team3)
+    }
+  };
+}
+
 function normalizeGsiPayload(payload, receivedAt = Date.now()) {
   const safePayload = isRecord(payload) ? payload : {};
   const map = pick(safePayload.map, MAP_FIELDS);
   const player = pick(safePayload.player, PLAYER_FIELDS);
   const hero = pick(safePayload.hero, HERO_FIELDS);
+  const roster = normalizeRosterPayload(safePayload);
 
   return {
     receivedAt,
@@ -63,10 +104,12 @@ function normalizeGsiPayload(payload, receivedAt = Date.now()) {
     hero,
     abilities: normalizeCollection(safePayload.abilities, ABILITY_FIELDS),
     items: normalizeCollection(safePayload.items, ITEM_FIELDS),
+    roster,
     inMatch: Boolean(map.matchid || map.game_state || hero.id || hero.name)
   };
 }
 
 module.exports = {
-  normalizeGsiPayload
+  normalizeGsiPayload,
+  normalizeRosterPayload
 };

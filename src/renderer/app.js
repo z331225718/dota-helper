@@ -22,6 +22,7 @@ let compact = false;
 let pinned = false;
 let overlayVisible = true;
 let toastTimer = null;
+let catalog = { heroes: [], roles: [] };
 
 function loadLocalList(key, fallback) {
   try {
@@ -190,9 +191,16 @@ function renderAdvice(advice) {
   const items = itemAdvice?.recommended ?? [];
   if (items.length) {
     dom['recommended-items'].replaceChildren(...items.map((item) => {
+      const chip = document.createElement('div');
       const name = document.createElement('strong');
+      const detail = document.createElement('span');
+      chip.className = 'advice-chip';
       name.textContent = item.displayName;
-      return name;
+      const timing = item.averageMinute >= 0 ? `常见 ${Math.round(item.averageMinute)} 分钟` : '出门阶段';
+      detail.textContent = item.contextual ? `针对阵容 · ${timing}` : `${timing} · ${Math.round(number(item.pickRate) * 100)}%`;
+      if (item.reason) chip.title = item.reason;
+      chip.append(name, detail);
+      return chip;
     }));
   } else {
     const empty = document.createElement('span');
@@ -201,17 +209,92 @@ function renderAdvice(advice) {
     dom['recommended-items'].replaceChildren(empty);
   }
   dom['item-advice-source'].textContent = itemAdvice?.source
-    ? `${itemAdvice.phaseLabel} · ${itemAdvice.source}`
-    : '读取游戏内当前默认出装';
+    ? `${itemAdvice.phaseLabel} · ${itemAdvice.source}${itemAdvice.role?.fallback ? ' · 所选分路样本不足，已回退' : ''}`
+    : '等待近期高分局构筑数据';
+
+  const counters = itemAdvice?.counters ?? [];
+  dom['counter-items'].replaceChildren(...counters.map((item) => {
+    const row = document.createElement('div');
+    const name = document.createElement('strong');
+    const reason = document.createElement('span');
+    row.className = 'counter-item';
+    name.textContent = `针对：${item.displayName}`;
+    reason.textContent = item.reason;
+    row.append(name, reason);
+    return row;
+  }));
+  const hardest = itemAdvice?.matchups?.[0];
+  dom['matchup-note'].textContent = hardest
+    ? `对位参考：对 ${hardest.heroName} ${hardest.level}，校正胜率 ${Math.round(hardest.winRate * 100)}%（${hardest.matches} 场）`
+    : itemAdvice?.matchups?.length === 0 && viewModel.roster?.enemyCount
+      ? '当前确认的敌方英雄缺少足够对位样本'
+      : '';
+
+  const requestedRole = itemAdvice?.role?.requested ?? advice?.skill?.role?.requested ?? null;
+  if (document.activeElement !== dom['role-select']) dom['role-select'].value = requestedRole ? String(requestedRole) : 'auto';
 
   const skill = advice?.skill;
   dom['recommended-skill'].textContent = skill?.title ?? '等待技能数据';
-  dom['skill-advice-reason'].textContent = skill?.reason ?? '仅对已验证的英雄给出建议';
+  dom['skill-advice-reason'].textContent = skill?.reason ?? '等待当前英雄和分路';
+}
+
+function findHeroId(value) {
+  const normalized = String(value ?? '').trim().toLocaleLowerCase('zh-CN');
+  if (!normalized) return null;
+  const hero = catalog.heroes.find((entry) => (
+    entry.nameZh.toLocaleLowerCase('zh-CN') === normalized
+    || entry.name.toLocaleLowerCase('en-US') === normalized
+    || entry.name.replace(/^npc_dota_hero_/, '').toLocaleLowerCase('en-US') === normalized
+  ));
+  return hero?.id ?? undefined;
+}
+
+function createRosterSlot(side, slot, index) {
+  const wrapper = document.createElement('label');
+  const input = document.createElement('input');
+  const source = document.createElement('small');
+  wrapper.className = 'roster-slot';
+  input.type = 'text';
+  input.setAttribute('list', 'hero-options');
+  input.dataset.side = side;
+  input.dataset.index = String(index);
+  input.placeholder = `英雄 ${index + 1}`;
+  input.autocomplete = 'off';
+  input.value = slot?.nameZh ?? '';
+  input.disabled = slot?.source === 'gsi';
+  input.title = slot?.source === 'gsi' ? '由 Dota 自动读取' : '输入中文英雄名补全';
+  source.textContent = slot?.source === 'gsi' ? '自动' : slot?.source === 'manual' ? '手动' : '';
+  input.addEventListener('change', async () => {
+    const heroId = findHeroId(input.value);
+    if (heroId === undefined) {
+      showToast('没有找到这个英雄，请从候选列表选择', true);
+      renderRoster(viewModel.roster);
+      return;
+    }
+    try {
+      renderMatch(await window.dotaHelper.setRosterSlot(side, index, heroId));
+    } catch (error) { handleError(error); }
+  });
+  wrapper.append(input, source);
+  return wrapper;
+}
+
+function renderRoster(roster) {
+  const safeRoster = roster ?? { allies: Array(5).fill(null), enemies: Array(5).fill(null), allyCount: 0, enemyCount: 0 };
+  const active = document.activeElement;
+  if (!active?.matches?.('.roster-slot input')) {
+    dom['ally-roster'].replaceChildren(...safeRoster.allies.map((slot, index) => createRosterSlot('allies', slot, index)));
+    dom['enemy-roster'].replaceChildren(...safeRoster.enemies.map((slot, index) => createRosterSlot('enemies', slot, index)));
+  }
+  dom['ally-count'].textContent = `${safeRoster.allyCount ?? 0} / 5`;
+  dom['enemy-count'].textContent = `${safeRoster.enemyCount ?? 0} / 5`;
+  dom['roster-coverage'].textContent = `已确认 ${(safeRoster.allyCount ?? 0) + (safeRoster.enemyCount ?? 0)} / 10`;
+  dom['roster-note'].textContent = safeRoster.note ?? '进入对局后会先尝试读取双方阵容';
 }
 
 function renderMatch(nextViewModel) {
   viewModel = nextViewModel ?? viewModel;
-  const { status, snapshot, advice } = viewModel;
+  const { status, snapshot, advice, roster } = viewModel;
   const isLive = Boolean(status?.connected && snapshot);
 
   dom['connection-pill'].dataset.state = status?.error ? 'error' : isLive ? 'live' : 'waiting';
@@ -263,6 +346,7 @@ function renderMatch(nextViewModel) {
 
   renderGoal(snapshot);
   renderEvents();
+  renderRoster(roster);
   renderAdvice(advice);
 }
 
@@ -376,6 +460,19 @@ dom['clear-events'].addEventListener('click', () => {
   renderEvents();
 });
 
+dom['clear-roster'].addEventListener('click', async () => {
+  try {
+    renderMatch(await window.dotaHelper.clearRoster());
+    showToast('已清空手动补全的阵容');
+  } catch (error) { handleError(error); }
+});
+
+dom['role-select'].addEventListener('change', async () => {
+  try {
+    renderMatch(await window.dotaHelper.setAdviceRole(dom['role-select'].value));
+  } catch (error) { handleError(error); }
+});
+
 dom['goal-form'].addEventListener('submit', (event) => {
   event.preventDefault();
   if (plan.length >= 8) return showToast('装备目标最多 8 个', true);
@@ -420,8 +517,21 @@ dom['remove-config'].addEventListener('click', async () => {
 
 window.dotaHelper.onStateUpdate(renderMatch);
 
-Promise.all([window.dotaHelper.getState(), window.dotaHelper.getSetup()])
-  .then(([initialState, initialSetup]) => {
+Promise.all([window.dotaHelper.getState(), window.dotaHelper.getSetup(), window.dotaHelper.getCatalog()])
+  .then(([initialState, initialSetup, initialCatalog]) => {
+    catalog = initialCatalog;
+    dom['hero-options'].replaceChildren(...catalog.heroes.map((hero) => {
+      const option = document.createElement('option');
+      option.value = hero.nameZh;
+      option.label = hero.name.replace(/^npc_dota_hero_/, '');
+      return option;
+    }));
+    dom['role-select'].append(...catalog.roles.map((role) => {
+      const option = document.createElement('option');
+      option.value = String(role.id);
+      option.textContent = role.label;
+      return option;
+    }));
     renderMatch(initialState);
     renderSetup(initialSetup);
     renderPlan();

@@ -30,6 +30,11 @@ async function run() {
     await window.locator('#demo-button').click();
     await window.getByText('幻影刺客', { exact: true }).waitFor();
     await window.getByText('实时建议', { exact: true }).waitFor();
+    await window.locator('#enemy-roster input').nth(2).fill('陈');
+    await window.locator('#enemy-roster input').nth(2).dispatchEvent('change');
+    await window.locator('#enemy-count').getByText('3 / 5', { exact: true }).waitFor();
+    await window.locator('#role-select').selectOption('2');
+    await window.getByText(/所选分路样本不足/).waitFor();
     await window.screenshot({ path: path.join(artifacts, 'desktop.png') });
     await overlay.getByText('幻影刺客', { exact: true }).waitFor();
     await overlay.locator('#skill-title').getByText('飘忽不定', { exact: true }).waitFor();
@@ -64,7 +69,7 @@ async function run() {
 
     if (errors.length) throw new Error(`Renderer errors:\n${errors.join('\n')}`);
     if (layout.horizontalOverflow) throw new Error('Compact layout has horizontal overflow');
-    if (layout.visiblePanels !== 6) throw new Error(`Expected 6 visible panels, got ${layout.visiblePanels}`);
+    if (layout.visiblePanels !== 7) throw new Error(`Expected 7 visible panels, got ${layout.visiblePanels}`);
     process.stdout.write(`${JSON.stringify(layout)}\n`);
   } finally {
     await app?.close();

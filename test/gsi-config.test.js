@@ -40,7 +40,8 @@ test('builds a read-only GSI data request', () => {
   assert.match(config, /127\.0\.0\.1:4000\/gsi/);
   assert.match(config, /"hero" "1"/);
   assert.match(config, /"items" "1"/);
-  assert.doesNotMatch(config, /messages|buildings|draft/i);
+  assert.match(config, /"draft" "1"/);
+  assert.doesNotMatch(config, /messages|buildings/i);
 });
 
 test('installs idempotently and removes only its managed config', (context) => {
