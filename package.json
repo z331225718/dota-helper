@@ -1,0 +1,23 @@
+{
+  "name": "personal-dota-helper",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A local-only, read-only Dota 2 companion built on Game State Integration.",
+  "main": "src/main/index.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test",
+    "test:ui": "node scripts/ui-smoke.js",
+    "check": "node --check src/main/index.js && node --check src/main/gsi-server.js && node --check src/main/gsi-config.js && node --check src/main/state.js && node --check src/preload/index.js && node --check src/renderer/app.js"
+  },
+  "dependencies": {
+    "lucide": "1.41.0"
+  },
+  "devDependencies": {
+    "electron": "44.2.0",
+    "playwright-core": "1.63.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

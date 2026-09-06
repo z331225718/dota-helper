@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>Personal Dota Helper</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand" aria-label="Personal Dota Helper">
+        <span class="brand-mark">LH</span>
+        <span class="brand-copy"><strong>LAST HIT</strong><small>PERSONAL COMPANION</small></span>
+      </div>
+      <div class="connection-pill" id="connection-pill" data-state="waiting">
+        <span class="status-dot"></span>
+        <span id="connection-label">等待 Dota 2</span>
+        <code>127.0.0.1:4000</code>
+      </div>
+      <div class="window-tools">
+        <button class="icon-button" id="demo-button" type="button" title="载入演示对局" aria-label="载入演示对局"><i data-lucide="play"></i></button>
+        <button class="icon-button" id="compact-button" type="button" title="切换紧凑模式" aria-label="切换紧凑模式" aria-pressed="false"><i data-lucide="panels-top-left"></i></button>
+        <button class="icon-button" id="pin-button" type="button" title="窗口置顶" aria-label="窗口置顶" aria-pressed="false"><i data-lucide="pin"></i></button>
+      </div>
+    </header>
+
+    <aside class="rail" aria-label="页面导航">
+      <button class="rail-button active" type="button" data-view="match" title="当前对局" aria-label="当前对局"><i data-lucide="gauge"></i></button>
+      <button class="rail-button" type="button" data-view="plan" title="个人计划" aria-label="个人计划"><i data-lucide="list-checks"></i></button>
+      <button class="rail-button" type="button" data-view="setup" title="连接设置" aria-label="连接设置"><i data-lucide="cable"></i></button>
+      <span class="rail-spacer"></span>
+      <div class="local-badge" title="仅本地处理"><i data-lucide="shield-check"></i></div>
+    </aside>
+
+    <main class="workspace">
+      <section class="view active" id="view-match" data-view-panel="match">
+        <div class="match-strip">
+          <div>
+            <span class="eyebrow" id="match-state">未进入对局</span>
+            <strong class="match-clock" id="match-clock">00:00</strong>
+          </div>
+          <div class="scoreboard" aria-label="比分">
+            <span class="team radiant">天辉 <strong id="radiant-score">0</strong></span>
+            <span class="score-divider">:</span>
+            <span class="team dire"><strong id="dire-score">0</strong> 夜魇</span>
+          </div>
+          <div class="phase" id="phase-label"><i data-lucide="sun"></i><span>等待数据</span></div>
+        </div>
+
+        <div class="dashboard-grid">
+          <article class="panel hero-panel">
+            <header class="panel-header"><span>我的英雄</span><code id="team-name">SELF POV</code></header>
+            <div class="hero-identity">
+              <div class="hero-monogram" id="hero-monogram">--</div>
+              <div><h1 id="hero-name">等待连接</h1><p>等级 <strong id="hero-level">0</strong> · <span id="life-state">未激活</span></p></div>
+            </div>
+            <div class="resource-row">
+              <div class="resource-label"><span>生命</span><strong id="health-text">0 / 0</strong></div>
+              <div class="resource-track"><span class="health-fill" id="health-fill"></span></div>
+            </div>
+            <div class="resource-row">
+              <div class="resource-label"><span>魔法</span><strong id="mana-text">0 / 0</strong></div>
+              <div class="resource-track"><span class="mana-fill" id="mana-fill"></span></div>
+            </div>
+            <div class="combat-stats">
+              <div><span>K / D / A</span><strong id="kda">0 / 0 / 0</strong></div>
+              <div><span>正 / 反补</span><strong id="last-hits">0 / 0</strong></div>
+              <div><span>连杀</span><strong id="kill-streak">0</strong></div>
+            </div>
+          </article>
+
+          <article class="panel economy-panel">
+            <header class="panel-header"><span>经济</span><code>LIVE</code></header>
+            <div class="gold-total"><i data-lucide="coins"></i><strong id="gold">0</strong><span>当前金币</span></div>
+            <div class="metric-pair">
+              <div><span>GPM</span><strong id="gpm">0</strong></div>
+              <div><span>XPM</span><strong id="xpm">0</strong></div>
+            </div>
+            <div class="buyback-row"><span>买活</span><strong id="buyback">暂无数据</strong></div>
+          </article>
+
+          <article class="panel inventory-panel">
+            <header class="panel-header"><span>物品栏</span><code id="item-count">0 ITEMS</code></header>
+            <div class="inventory-grid" id="inventory-grid"></div>
+          </article>
+
+          <article class="panel next-goal-panel">
+            <header class="panel-header"><span>下一目标</span><button class="text-button" type="button" data-jump-view="plan">编辑计划</button></header>
+            <div class="goal-empty" id="goal-empty"><i data-lucide="crosshair"></i><span>尚未设置目标</span></div>
+            <div class="goal-live hidden" id="goal-live">
+              <span class="goal-priority" id="goal-priority">P1</span>
+              <h2 id="goal-name">目标</h2>
+              <div class="goal-progress"><span id="goal-progress-fill"></span></div>
+              <div class="goal-meta"><span id="goal-gap">还差 0</span><strong id="goal-eta">--:--</strong></div>
+            </div>
+          </article>
+
+          <article class="panel timeline-panel">
+            <header class="panel-header"><span>本局记录</span><button class="icon-button small" id="clear-events" type="button" title="清空记录" aria-label="清空记录"><i data-lucide="trash-2"></i></button></header>
+            <ol class="event-list" id="event-list"></ol>
+          </article>
+        </div>
+      </section>
+
+      <section class="view" id="view-plan" data-view-panel="plan">
+        <div class="section-heading"><div><span class="eyebrow">PERSONAL PLAYBOOK</span><h1>个人计划</h1></div><span class="section-counter" id="plan-counter">0 / 8</span></div>
+        <div class="planner-layout">
+          <article class="panel plan-editor">
+            <header class="panel-header"><span>装备目标</span><code>LOCAL</code></header>
+            <form id="goal-form" class="goal-form">
+              <label><span>目标名称</span><input id="goal-input" name="name" maxlength="40" autocomplete="off" placeholder="例如：黑皇杖" required></label>
+              <label><span>目标金币</span><input id="cost-input" name="cost" type="number" min="0" max="99999" step="1" placeholder="4050" required></label>
+              <button class="primary-button" type="submit"><i data-lucide="plus"></i><span>加入计划</span></button>
+            </form>
+            <ol class="plan-list" id="plan-list"></ol>
+          </article>
+          <article class="panel checkpoint-editor">
+            <header class="panel-header"><span>时间检查点</span><code>MATCH CLOCK</code></header>
+            <form id="checkpoint-form" class="goal-form">
+              <label><span>分钟</span><input id="minute-input" name="minute" type="number" min="0" max="180" step="1" placeholder="10" required></label>
+              <label><span>检查事项</span><input id="checkpoint-input" name="label" maxlength="48" autocomplete="off" placeholder="核对下一件装备" required></label>
+              <button class="primary-button" type="submit"><i data-lucide="plus"></i><span>加入检查点</span></button>
+            </form>
+            <ol class="checkpoint-list" id="checkpoint-list"></ol>
+          </article>
+        </div>
+      </section>
+
+      <section class="view" id="view-setup" data-view-panel="setup">
+        <div class="section-heading"><div><span class="eyebrow">LOCAL LINK</span><h1>连接</h1></div><span class="section-counter">GSI</span></div>
+        <div class="setup-layout">
+          <article class="panel setup-panel">
+            <header class="panel-header"><span>Dota 2 目录</span><code>AUTO / MANUAL</code></header>
+            <div class="path-box"><i data-lucide="folder"></i><code id="selected-path">未检测到安装目录</code></div>
+            <div class="launch-option"><span>Steam 启动选项</span><code>-gamestateintegration</code><strong>手动确认</strong></div>
+            <div class="setup-actions">
+              <button class="secondary-button" id="choose-directory" type="button"><i data-lucide="folder-search"></i><span>选择目录</span></button>
+              <button class="primary-button" id="install-config" type="button"><i data-lucide="plug-zap"></i><span>安装 GSI 配置</span></button>
+              <button class="danger-button" id="remove-config" type="button"><i data-lucide="unplug"></i><span>移除配置</span></button>
+            </div>
+            <div class="setup-status" id="setup-status" data-state="idle"><span class="status-dot"></span><span>等待检测</span></div>
+          </article>
+          <article class="panel boundary-panel">
+            <header class="panel-header"><span>权限边界</span><code>READ ONLY</code></header>
+            <dl class="boundary-list">
+              <div><dt>监听地址</dt><dd>127.0.0.1</dd></div>
+              <div><dt>游戏输入</dt><dd class="off">禁用</dd></div>
+              <div><dt>进程访问</dt><dd class="off">禁用</dd></div>
+              <div><dt>云端同步</dt><dd class="off">禁用</dd></div>
+              <div><dt>原始数据落盘</dt><dd class="off">禁用</dd></div>
+            </dl>
+          </article>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="../../node_modules/lucide/dist/umd/lucide.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

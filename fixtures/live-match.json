@@ -1,0 +1,70 @@
+{
+  "provider": {
+    "name": "Dota 2",
+    "appid": 570,
+    "version": 47,
+    "timestamp": 1788696000
+  },
+  "auth": {
+    "token": "demo-only"
+  },
+  "map": {
+    "name": "start",
+    "matchid": "9012030405",
+    "game_time": 1087,
+    "clock_time": 1042,
+    "daytime": false,
+    "radiant_score": 17,
+    "dire_score": 14,
+    "game_state": "DOTA_GAMERULES_STATE_GAME_IN_PROGRESS",
+    "paused": false
+  },
+  "player": {
+    "steamid": "76561198000000000",
+    "name": "Local Player",
+    "activity": "playing",
+    "kills": 5,
+    "deaths": 2,
+    "assists": 9,
+    "last_hits": 126,
+    "denies": 11,
+    "kill_streak": 3,
+    "team_name": "RADIANT",
+    "gold": 1760,
+    "gold_reliable": 930,
+    "gold_unreliable": 830,
+    "gpm": 524,
+    "xpm": 612
+  },
+  "hero": {
+    "id": 44,
+    "name": "npc_dota_hero_phantom_assassin",
+    "level": 14,
+    "alive": true,
+    "health": 1388,
+    "max_health": 1840,
+    "health_percent": 75,
+    "mana": 421,
+    "max_mana": 720,
+    "mana_percent": 58,
+    "buyback_cost": 1094,
+    "buyback_cooldown": 0,
+    "aghanims_scepter": false,
+    "aghanims_shard": false
+  },
+  "items": {
+    "slot0": { "name": "item_power_treads", "can_cast": true, "cooldown": 0, "charges": 0 },
+    "slot1": { "name": "item_bfury", "can_cast": false, "cooldown": 0, "charges": 0 },
+    "slot2": { "name": "item_desolator", "can_cast": false, "cooldown": 0, "charges": 0 },
+    "slot3": { "name": "item_magic_wand", "can_cast": true, "cooldown": 0, "charges": 12 },
+    "slot4": { "name": "item_black_king_bar", "can_cast": true, "cooldown": 0, "charges": 0 },
+    "slot5": { "name": "item_tpscroll", "can_cast": true, "cooldown": 0, "charges": 2 }
+  },
+  "abilities": {
+    "ability0": { "name": "phantom_assassin_stifling_dagger", "level": 4, "can_cast": true, "cooldown": 0 },
+    "ability1": { "name": "phantom_assassin_phantom_strike", "level": 4, "can_cast": false, "cooldown": 3 }
+  },
+  "chat": {
+    "text": "this field must never reach the renderer"
+  }
+}
