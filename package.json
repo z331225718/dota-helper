@@ -6,9 +6,10 @@
   "main": "src/main/index.js",
   "scripts": {
     "start": "electron .",
+    "data:update": "node scripts/update-dota-data.js",
     "test": "node --test",
     "test:ui": "node scripts/ui-smoke.js",
-    "check": "node --check src/main/index.js && node --check src/main/gsi-server.js && node --check src/main/gsi-config.js && node --check src/main/state.js && node --check src/preload/index.js && node --check src/renderer/app.js"
+    "check": "node --check src/main/index.js && node --check src/main/gsi-server.js && node --check src/main/gsi-config.js && node --check src/main/state.js && node --check src/main/advice-service.js && node --check src/main/keyvalues.js && node --check src/preload/index.js && node --check src/preload/overlay.js && node --check src/renderer/app.js && node --check src/overlay/app.js"
   },
   "dependencies": {
     "lucide": "1.41.0"

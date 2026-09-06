@@ -8,7 +8,8 @@ const path = require('node:path');
 function sourceFiles(root) {
   return fs.readdirSync(root, { withFileTypes: true }).flatMap((entry) => {
     const resolved = path.join(root, entry.name);
-    return entry.isDirectory() ? sourceFiles(resolved) : [resolved];
+    if (entry.isDirectory()) return entry.name === 'data' ? [] : sourceFiles(resolved);
+    return /\.(?:js|html)$/i.test(entry.name) ? [resolved] : [];
   });
 }
 

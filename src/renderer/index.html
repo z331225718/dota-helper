@@ -12,7 +12,7 @@
     <header class="topbar">
       <div class="brand" aria-label="Personal Dota Helper">
         <span class="brand-mark">LH</span>
-        <span class="brand-copy"><strong>LAST HIT</strong><small>PERSONAL COMPANION</small></span>
+        <span class="brand-copy"><strong>DOTA 对局助手</strong><small>仅为自己的本地辅助</small></span>
       </div>
       <div class="connection-pill" id="connection-pill" data-state="waiting">
         <span class="status-dot"></span>
@@ -21,6 +21,7 @@
       </div>
       <div class="window-tools">
         <button class="icon-button" id="demo-button" type="button" title="载入演示对局" aria-label="载入演示对局"><i data-lucide="play"></i></button>
+        <button class="icon-button" id="overlay-button" type="button" title="显示或隐藏悬浮窗" aria-label="显示或隐藏悬浮窗" aria-pressed="true"><i data-lucide="picture-in-picture-2"></i></button>
         <button class="icon-button" id="compact-button" type="button" title="切换紧凑模式" aria-label="切换紧凑模式" aria-pressed="false"><i data-lucide="panels-top-left"></i></button>
         <button class="icon-button" id="pin-button" type="button" title="窗口置顶" aria-label="窗口置顶" aria-pressed="false"><i data-lucide="pin"></i></button>
       </div>
@@ -51,7 +52,7 @@
 
         <div class="dashboard-grid">
           <article class="panel hero-panel">
-            <header class="panel-header"><span>我的英雄</span><code id="team-name">SELF POV</code></header>
+            <header class="panel-header"><span>我的英雄</span><code id="team-name">己方视角</code></header>
             <div class="hero-identity">
               <div class="hero-monogram" id="hero-monogram">--</div>
               <div><h1 id="hero-name">等待连接</h1><p>等级 <strong id="hero-level">0</strong> · <span id="life-state">未激活</span></p></div>
@@ -65,32 +66,48 @@
               <div class="resource-track"><span class="mana-fill" id="mana-fill"></span></div>
             </div>
             <div class="combat-stats">
-              <div><span>K / D / A</span><strong id="kda">0 / 0 / 0</strong></div>
+              <div><span>击杀 / 死亡 / 助攻</span><strong id="kda">0 / 0 / 0</strong></div>
               <div><span>正 / 反补</span><strong id="last-hits">0 / 0</strong></div>
               <div><span>连杀</span><strong id="kill-streak">0</strong></div>
             </div>
           </article>
 
           <article class="panel economy-panel">
-            <header class="panel-header"><span>经济</span><code>LIVE</code></header>
+            <header class="panel-header"><span>经济</span><code>实时</code></header>
             <div class="gold-total"><i data-lucide="coins"></i><strong id="gold">0</strong><span>当前金币</span></div>
             <div class="metric-pair">
-              <div><span>GPM</span><strong id="gpm">0</strong></div>
-              <div><span>XPM</span><strong id="xpm">0</strong></div>
+              <div><span>每分钟金钱</span><strong id="gpm">0</strong></div>
+              <div><span>每分钟经验</span><strong id="xpm">0</strong></div>
             </div>
             <div class="buyback-row"><span>买活</span><strong id="buyback">暂无数据</strong></div>
           </article>
 
           <article class="panel inventory-panel">
-            <header class="panel-header"><span>物品栏</span><code id="item-count">0 ITEMS</code></header>
+            <header class="panel-header"><span>物品栏</span><code id="item-count">0 件</code></header>
             <div class="inventory-grid" id="inventory-grid"></div>
+          </article>
+
+          <article class="panel advice-panel">
+            <header class="panel-header"><span>实时建议</span><code>本地离线</code></header>
+            <div class="advice-grid">
+              <section>
+                <span class="advice-label"><i data-lucide="shopping-cart"></i>下一件装备</span>
+                <div class="recommended-items" id="recommended-items"><span class="advice-empty">等待英雄数据</span></div>
+                <small id="item-advice-source">读取游戏内当前默认出装</small>
+              </section>
+              <section>
+                <span class="advice-label"><i data-lucide="sparkles"></i>下一级加点</span>
+                <strong class="recommended-skill" id="recommended-skill">等待技能数据</strong>
+                <small id="skill-advice-reason">仅对已验证的英雄给出建议</small>
+              </section>
+            </div>
           </article>
 
           <article class="panel next-goal-panel">
             <header class="panel-header"><span>下一目标</span><button class="text-button" type="button" data-jump-view="plan">编辑计划</button></header>
             <div class="goal-empty" id="goal-empty"><i data-lucide="crosshair"></i><span>尚未设置目标</span></div>
             <div class="goal-live hidden" id="goal-live">
-              <span class="goal-priority" id="goal-priority">P1</span>
+              <span class="goal-priority" id="goal-priority">优先</span>
               <h2 id="goal-name">目标</h2>
               <div class="goal-progress"><span id="goal-progress-fill"></span></div>
               <div class="goal-meta"><span id="goal-gap">还差 0</span><strong id="goal-eta">--:--</strong></div>
@@ -105,10 +122,10 @@
       </section>
 
       <section class="view" id="view-plan" data-view-panel="plan">
-        <div class="section-heading"><div><span class="eyebrow">PERSONAL PLAYBOOK</span><h1>个人计划</h1></div><span class="section-counter" id="plan-counter">0 / 8</span></div>
+        <div class="section-heading"><div><span class="eyebrow">本地个人方案</span><h1>个人计划</h1></div><span class="section-counter" id="plan-counter">0 / 8</span></div>
         <div class="planner-layout">
           <article class="panel plan-editor">
-            <header class="panel-header"><span>装备目标</span><code>LOCAL</code></header>
+            <header class="panel-header"><span>装备目标</span><code>仅本机</code></header>
             <form id="goal-form" class="goal-form">
               <label><span>目标名称</span><input id="goal-input" name="name" maxlength="40" autocomplete="off" placeholder="例如：黑皇杖" required></label>
               <label><span>目标金币</span><input id="cost-input" name="cost" type="number" min="0" max="99999" step="1" placeholder="4050" required></label>
@@ -117,7 +134,7 @@
             <ol class="plan-list" id="plan-list"></ol>
           </article>
           <article class="panel checkpoint-editor">
-            <header class="panel-header"><span>时间检查点</span><code>MATCH CLOCK</code></header>
+            <header class="panel-header"><span>时间检查点</span><code>对局时间</code></header>
             <form id="checkpoint-form" class="goal-form">
               <label><span>分钟</span><input id="minute-input" name="minute" type="number" min="0" max="180" step="1" placeholder="10" required></label>
               <label><span>检查事项</span><input id="checkpoint-input" name="label" maxlength="48" autocomplete="off" placeholder="核对下一件装备" required></label>
@@ -129,21 +146,21 @@
       </section>
 
       <section class="view" id="view-setup" data-view-panel="setup">
-        <div class="section-heading"><div><span class="eyebrow">LOCAL LINK</span><h1>连接</h1></div><span class="section-counter">GSI</span></div>
+        <div class="section-heading"><div><span class="eyebrow">本地连接</span><h1>连接</h1></div><span class="section-counter">游戏状态</span></div>
         <div class="setup-layout">
           <article class="panel setup-panel">
-            <header class="panel-header"><span>Dota 2 目录</span><code>AUTO / MANUAL</code></header>
+            <header class="panel-header"><span>Dota 2 目录</span><code>自动 / 手动</code></header>
             <div class="path-box"><i data-lucide="folder"></i><code id="selected-path">未检测到安装目录</code></div>
             <div class="launch-option"><span>Steam 启动选项</span><code>-gamestateintegration</code><strong>手动确认</strong></div>
             <div class="setup-actions">
               <button class="secondary-button" id="choose-directory" type="button"><i data-lucide="folder-search"></i><span>选择目录</span></button>
-              <button class="primary-button" id="install-config" type="button"><i data-lucide="plug-zap"></i><span>安装 GSI 配置</span></button>
+              <button class="primary-button" id="install-config" type="button"><i data-lucide="plug-zap"></i><span>安装游戏连接配置</span></button>
               <button class="danger-button" id="remove-config" type="button"><i data-lucide="unplug"></i><span>移除配置</span></button>
             </div>
             <div class="setup-status" id="setup-status" data-state="idle"><span class="status-dot"></span><span>等待检测</span></div>
           </article>
           <article class="panel boundary-panel">
-            <header class="panel-header"><span>权限边界</span><code>READ ONLY</code></header>
+            <header class="panel-header"><span>权限边界</span><code>只读</code></header>
             <dl class="boundary-list">
               <div><dt>监听地址</dt><dd>127.0.0.1</dd></div>
               <div><dt>游戏输入</dt><dd class="off">禁用</dd></div>

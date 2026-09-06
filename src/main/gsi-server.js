@@ -5,7 +5,7 @@ const { EventEmitter } = require('node:events');
 const { normalizeGsiPayload } = require('./state');
 
 const DEFAULT_MAX_BODY_BYTES = 128 * 1024;
-const DEFAULT_STALE_AFTER_MS = 12_000;
+const DEFAULT_STALE_AFTER_MS = 40_000;
 
 class GsiServer extends EventEmitter {
   constructor({ token, port = 4000, maxBodyBytes = DEFAULT_MAX_BODY_BYTES, staleAfterMs = DEFAULT_STALE_AFTER_MS }) {

@@ -62,7 +62,9 @@
   },
   "abilities": {
     "ability0": { "name": "phantom_assassin_stifling_dagger", "level": 4, "can_cast": true, "cooldown": 0 },
-    "ability1": { "name": "phantom_assassin_phantom_strike", "level": 4, "can_cast": false, "cooldown": 3 }
+    "ability1": { "name": "phantom_assassin_phantom_strike", "level": 4, "can_cast": false, "cooldown": 3 },
+    "ability2": { "name": "phantom_assassin_immaterial", "level": 3, "can_cast": false, "cooldown": 0, "passive": true },
+    "ability3": { "name": "phantom_assassin_coup_de_grace", "level": 2, "can_cast": false, "cooldown": 0, "passive": true, "ultimate": true }
   },
   "chat": {
     "text": "this field must never reach the renderer"

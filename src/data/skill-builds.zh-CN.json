@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-06",
+  "profiles": {
+    "npc_dota_hero_clinkz": {
+      "label": "通用核心路线",
+      "steps": [
+        { "level": 1, "ability": "clinkz_searing_arrows", "reason": "先拿稳定补刀和消耗" },
+        { "level": 2, "ability": "clinkz_death_pact", "reason": "补充续航和生存" },
+        { "level": 3, "ability": "clinkz_searing_arrows", "reason": "主升稳定物理输出" },
+        { "level": 4, "ability": "clinkz_strafe", "reason": "开始补爆发攻速" },
+        { "level": 5, "ability": "clinkz_searing_arrows", "reason": "继续强化对线输出" },
+        { "level": 6, "ability": "clinkz_wind_walk", "reason": "大招按等级升级" },
+        { "level": 7, "ability": "clinkz_searing_arrows", "reason": "优先点满主输出技能" },
+        { "level": 8, "ability": "clinkz_strafe", "reason": "提高爆发窗口" },
+        { "level": 9, "ability": "clinkz_strafe", "reason": "继续提高爆发窗口" },
+        { "level": 11, "ability": "clinkz_strafe", "reason": "点满爆发攻速" },
+        { "level": 12, "ability": "clinkz_wind_walk", "reason": "大招按等级升级" },
+        { "level": 13, "ability": "clinkz_death_pact", "reason": "补足续航和容错" },
+        { "level": 14, "ability": "clinkz_death_pact", "reason": "补足续航和容错" },
+        { "level": 16, "ability": "clinkz_death_pact", "reason": "点满续航技能" },
+        { "level": 18, "ability": "clinkz_wind_walk", "reason": "点满大招" }
+      ]
+    },
+    "npc_dota_hero_phantom_assassin": {
+      "label": "通用核心路线",
+      "steps": [
+        { "level": 1, "ability": "phantom_assassin_stifling_dagger", "reason": "远程补刀和消耗" },
+        { "level": 2, "ability": "phantom_assassin_phantom_strike", "reason": "补机动和攻速" },
+        { "level": 3, "ability": "phantom_assassin_stifling_dagger", "reason": "主升对线技能" },
+        { "level": 4, "ability": "phantom_assassin_immaterial", "reason": "增加生存能力" },
+        { "level": 5, "ability": "phantom_assassin_stifling_dagger", "reason": "继续强化补刀消耗" },
+        { "level": 6, "ability": "phantom_assassin_coup_de_grace", "reason": "大招按等级升级" },
+        { "level": 7, "ability": "phantom_assassin_stifling_dagger", "reason": "点满主升技能" },
+        { "level": 8, "ability": "phantom_assassin_phantom_strike", "reason": "提高切入爆发" },
+        { "level": 9, "ability": "phantom_assassin_phantom_strike", "reason": "提高切入爆发" },
+        { "level": 11, "ability": "phantom_assassin_phantom_strike", "reason": "点满切入技能" },
+        { "level": 12, "ability": "phantom_assassin_coup_de_grace", "reason": "大招按等级升级" },
+        { "level": 13, "ability": "phantom_assassin_immaterial", "reason": "补足生存能力" },
+        { "level": 14, "ability": "phantom_assassin_immaterial", "reason": "补足生存能力" },
+        { "level": 16, "ability": "phantom_assassin_immaterial", "reason": "点满生存技能" },
+        { "level": 18, "ability": "phantom_assassin_coup_de_grace", "reason": "点满大招" }
+      ]
+    }
+  }
+}

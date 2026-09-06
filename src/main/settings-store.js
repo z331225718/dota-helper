@@ -34,6 +34,16 @@ class SettingsStore {
     }
     return this.data.gsiToken;
   }
+
+  get(key, fallback = null) {
+    return Object.hasOwn(this.data, key) ? this.data[key] : fallback;
+  }
+
+  set(key, value) {
+    this.data[key] = value;
+    this.write();
+    return value;
+  }
 }
 
 module.exports = { SettingsStore };

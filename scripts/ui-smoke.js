@@ -14,7 +14,12 @@ async function run() {
   let app;
   try {
     app = await electron.launch({ args: ['.', `--user-data-dir=${userData}`], cwd: root });
-    const window = await app.firstWindow();
+    await app.firstWindow();
+    await new Promise((resolve) => setTimeout(resolve, 250));
+    const windows = app.windows();
+    const window = windows.find((candidate) => candidate.url().endsWith('/renderer/index.html'));
+    const overlay = windows.find((candidate) => candidate.url().endsWith('/overlay/index.html'));
+    if (!window || !overlay) throw new Error('Expected both dashboard and overlay windows');
     const errors = [];
     window.on('console', (message) => {
       if (message.type() === 'error') errors.push(message.text());
@@ -23,8 +28,12 @@ async function run() {
 
     await window.waitForLoadState('domcontentloaded');
     await window.locator('#demo-button').click();
-    await window.getByText('Phantom Assassin', { exact: true }).waitFor();
+    await window.getByText('幻影刺客', { exact: true }).waitFor();
+    await window.getByText('实时建议', { exact: true }).waitFor();
     await window.screenshot({ path: path.join(artifacts, 'desktop.png') });
+    await overlay.getByText('幻影刺客', { exact: true }).waitFor();
+    await overlay.locator('#skill-title').getByText('飘忽不定', { exact: true }).waitFor();
+    await overlay.screenshot({ path: path.join(artifacts, 'overlay.png') });
 
     await window.locator('[data-view="plan"]').click();
     await window.locator('#goal-input').fill('蝴蝶');
@@ -55,7 +64,7 @@ async function run() {
 
     if (errors.length) throw new Error(`Renderer errors:\n${errors.join('\n')}`);
     if (layout.horizontalOverflow) throw new Error('Compact layout has horizontal overflow');
-    if (layout.visiblePanels !== 5) throw new Error(`Expected 5 visible panels, got ${layout.visiblePanels}`);
+    if (layout.visiblePanels !== 6) throw new Error(`Expected 6 visible panels, got ${layout.visiblePanels}`);
     process.stdout.write(`${JSON.stringify(layout)}\n`);
   } finally {
     await app?.close();

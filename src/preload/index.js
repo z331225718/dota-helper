@@ -11,6 +11,7 @@ const api = Object.freeze({
   removeConfig: () => ipcRenderer.invoke('setup:remove'),
   setAlwaysOnTop: (enabled) => ipcRenderer.invoke('window:always-on-top', Boolean(enabled)),
   setCompact: (enabled) => ipcRenderer.invoke('window:compact', Boolean(enabled)),
+  toggleOverlay: () => ipcRenderer.invoke('overlay:toggle'),
   loadDemo: () => ipcRenderer.invoke('demo:load'),
   onStateUpdate: (callback) => {
     const listener = (_event, viewModel) => callback(viewModel);

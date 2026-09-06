@@ -20,6 +20,7 @@ let checkpoints = loadLocalList(CHECKPOINT_KEY, DEFAULT_CHECKPOINTS);
 let setup = null;
 let compact = false;
 let pinned = false;
+let overlayVisible = true;
 let toastTimer = null;
 
 function loadLocalList(key, fallback) {
@@ -96,12 +97,12 @@ function createInventorySlot(item, index) {
   }
 
   const name = document.createElement('strong');
-  name.textContent = humanizeInternalName(item.name, ['item_']);
+  name.textContent = item.displayName || humanizeInternalName(item.name, ['item_']);
   const detail = document.createElement('span');
   const details = [];
   if (number(item.charges) > 0) details.push(`${number(item.charges)} 次`);
   if (number(item.cooldown) > 0) details.push(`${number(item.cooldown)}s`);
-  detail.textContent = details.join(' · ') || item.slot.toUpperCase();
+  detail.textContent = details.join(' · ') || `第 ${index + 1} 格`;
   slot.append(name, detail);
   return slot;
 }
@@ -137,7 +138,7 @@ function trackSnapshotChanges(snapshot) {
 
   const oldItems = new Set(previousSnapshot.items.map((item) => item.name));
   snapshot.items.filter((item) => !oldItems.has(item.name)).forEach((item) => {
-    addEvent(`获得 ${humanizeInternalName(item.name, ['item_'])}`, clock);
+    addEvent(`获得 ${item.displayName || humanizeInternalName(item.name, ['item_'])}`, clock);
   });
 
   previousSnapshot = snapshot;
@@ -177,20 +178,44 @@ function renderGoal(snapshot) {
   const etaSeconds = gpm > 0 ? Math.ceil(gap / gpm * 60) : null;
   const progress = cost > 0 ? clamp(gold / cost * 100, 0, 100) : 100;
 
-  dom['goal-priority'].textContent = 'P1';
+  dom['goal-priority'].textContent = '优先';
   dom['goal-name'].textContent = current.name;
   dom['goal-progress-fill'].style.width = `${progress}%`;
   dom['goal-gap'].textContent = gap > 0 ? `还差 ${gap.toLocaleString('zh-CN')}` : '金币已满足';
-  dom['goal-eta'].textContent = gap === 0 ? 'READY' : etaSeconds === null ? '--:--' : `约 ${formatClock(etaSeconds)}`;
+  dom['goal-eta'].textContent = gap === 0 ? '已满足' : etaSeconds === null ? '--:--' : `约 ${formatClock(etaSeconds)}`;
+}
+
+function renderAdvice(advice) {
+  const itemAdvice = advice?.items;
+  const items = itemAdvice?.recommended ?? [];
+  if (items.length) {
+    dom['recommended-items'].replaceChildren(...items.map((item) => {
+      const name = document.createElement('strong');
+      name.textContent = item.displayName;
+      return name;
+    }));
+  } else {
+    const empty = document.createElement('span');
+    empty.className = 'advice-empty';
+    empty.textContent = itemAdvice ? '当前阶段没有未购买的推荐装备' : '等待英雄数据';
+    dom['recommended-items'].replaceChildren(empty);
+  }
+  dom['item-advice-source'].textContent = itemAdvice?.source
+    ? `${itemAdvice.phaseLabel} · ${itemAdvice.source}`
+    : '读取游戏内当前默认出装';
+
+  const skill = advice?.skill;
+  dom['recommended-skill'].textContent = skill?.title ?? '等待技能数据';
+  dom['skill-advice-reason'].textContent = skill?.reason ?? '仅对已验证的英雄给出建议';
 }
 
 function renderMatch(nextViewModel) {
   viewModel = nextViewModel ?? viewModel;
-  const { status, snapshot } = viewModel;
+  const { status, snapshot, advice } = viewModel;
   const isLive = Boolean(status?.connected && snapshot);
 
   dom['connection-pill'].dataset.state = status?.error ? 'error' : isLive ? 'live' : 'waiting';
-  dom['connection-label'].textContent = status?.error ?? (isLive ? 'GSI 已连接' : status?.listening ? '等待 Dota 2' : 'GSI 未监听');
+  dom['connection-label'].textContent = status?.error ?? (isLive ? '游戏数据已连接' : status?.listening ? '等待 Dota 2' : '游戏数据未监听');
   dom['connection-pill'].querySelector('code').textContent = `127.0.0.1:${status?.port ?? 4000}`;
 
   const data = snapshot ?? { map: {}, player: {}, hero: {}, items: [] };
@@ -202,12 +227,16 @@ function renderMatch(nextViewModel) {
   dom['dire-score'].textContent = number(data.map.dire_score);
   dom['phase-label'].querySelector('span').textContent = data.map.daytime === false ? '夜晚' : data.map.daytime === true ? '白天' : '等待数据';
 
-  const heroName = humanizeInternalName(data.hero.name, ['npc_dota_hero_']);
+  const heroName = data.hero.displayName || humanizeInternalName(data.hero.name, ['npc_dota_hero_']);
   dom['hero-name'].textContent = data.hero.name ? heroName : '等待连接';
   dom['hero-monogram'].textContent = data.hero.name ? heroName.split(' ').map((part) => part[0]).join('').slice(0, 2).toUpperCase() : '--';
   dom['hero-level'].textContent = number(data.hero.level);
   dom['life-state'].textContent = data.hero.alive === false ? `复活 ${number(data.hero.respawn_seconds)}s` : data.hero.name ? '存活' : '未激活';
-  dom['team-name'].textContent = data.player.team_name || 'SELF POV';
+  dom['team-name'].textContent = data.player.team_name === 'RADIANT'
+    ? '天辉'
+    : data.player.team_name === 'DIRE'
+      ? '夜魇'
+      : '己方视角';
 
   const health = number(data.hero.health);
   const maxHealth = number(data.hero.max_health);
@@ -229,11 +258,12 @@ function renderMatch(nextViewModel) {
   dom.buyback.textContent = buybackCooldown > 0 ? `冷却 ${buybackCooldown}s` : buybackCost > 0 ? `${buybackCost.toLocaleString('zh-CN')} 金` : '暂无数据';
 
   const visibleItems = data.items.filter((item) => /^slot\d+$/.test(item.slot)).slice(0, 9);
-  dom['item-count'].textContent = `${visibleItems.length} ITEMS`;
+  dom['item-count'].textContent = `${visibleItems.length} 件`;
   dom['inventory-grid'].replaceChildren(...Array.from({ length: 9 }, (_, index) => createInventorySlot(visibleItems[index], index)));
 
   renderGoal(snapshot);
   renderEvents();
+  renderAdvice(advice);
 }
 
 function createListRow({ index, name, detail, onDelete }) {
@@ -298,7 +328,7 @@ function renderSetup(nextSetup) {
   dom['setup-status'].querySelector('span:last-child').textContent = hasForeignConfig
     ? '发现同名非托管配置，已保持不变'
     : status?.managed
-      ? 'GSI 配置已安装'
+      ? '游戏连接配置已安装'
       : setup.selectedDotaRoot
         ? '目录已就绪'
         : '等待选择目录';
@@ -323,6 +353,13 @@ dom['compact-button'].addEventListener('click', async () => {
     compact = await window.dotaHelper.setCompact(!compact);
     document.body.classList.toggle('compact', compact);
     dom['compact-button'].setAttribute('aria-pressed', String(compact));
+  } catch (error) { handleError(error); }
+});
+
+dom['overlay-button'].addEventListener('click', async () => {
+  try {
+    overlayVisible = await window.dotaHelper.toggleOverlay();
+    dom['overlay-button'].setAttribute('aria-pressed', String(overlayVisible));
   } catch (error) { handleError(error); }
 });
 
@@ -370,14 +407,14 @@ dom['choose-directory'].addEventListener('click', async () => {
 dom['install-config'].addEventListener('click', async () => {
   try {
     renderSetup(await window.dotaHelper.installConfig());
-    showToast('GSI 配置已安装');
+    showToast('游戏连接配置已安装');
   } catch (error) { handleError(error); }
 });
 
 dom['remove-config'].addEventListener('click', async () => {
   try {
     renderSetup(await window.dotaHelper.removeConfig());
-    showToast('GSI 配置已移除');
+    showToast('游戏连接配置已移除');
   } catch (error) { handleError(error); }
 });
 

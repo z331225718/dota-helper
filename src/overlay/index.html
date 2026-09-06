@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>Dota 2 对局建议</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="overlay-shell" id="overlay-shell" data-state="waiting">
+    <header class="overlay-header">
+      <div class="brand">
+        <span class="brand-mark">D2</span>
+        <div><strong>对局建议</strong><span id="connection-label">等待 Dota 2</span></div>
+      </div>
+      <div class="header-actions">
+        <button id="lock-overlay" class="icon-button" type="button" title="锁定位置并让鼠标穿透" aria-label="锁定位置并让鼠标穿透" aria-pressed="false"><i data-lucide="mouse-pointer-2-off"></i></button>
+        <button id="close-overlay" class="icon-button" type="button" title="隐藏悬浮窗" aria-label="隐藏悬浮窗"><i data-lucide="x"></i></button>
+      </div>
+    </header>
+
+    <section class="waiting-state" id="waiting-state">
+      <i data-lucide="radio-tower"></i>
+      <strong>等待进入对局</strong>
+      <span>检测到英雄后会自动显示中文建议</span>
+    </section>
+
+    <div class="live-content hidden" id="live-content">
+      <section class="hero-strip">
+        <div>
+          <span class="eyebrow">当前英雄</span>
+          <h1 id="hero-name">未知英雄</h1>
+          <span class="hero-level">等级 <strong id="hero-level">0</strong></span>
+        </div>
+        <div class="live-metrics">
+          <strong id="match-clock">00:00</strong>
+          <span><i data-lucide="coins"></i><b id="gold">0</b></span>
+        </div>
+      </section>
+
+      <section class="advice-section item-advice">
+        <header>
+          <div><i data-lucide="shopping-cart"></i><strong>下一件装备</strong></div>
+          <span id="item-phase">前期</span>
+        </header>
+        <ol id="item-list" class="item-list"></ol>
+        <p id="item-alternatives" class="alternatives"></p>
+      </section>
+
+      <section class="advice-section skill-advice">
+        <header>
+          <div><i data-lucide="sparkles"></i><strong>下一级加点</strong></div>
+          <span id="skill-profile">本地路线</span>
+        </header>
+        <div class="next-skill">
+          <strong id="skill-title">暂无已验证加点</strong>
+          <p id="skill-reason">等待技能数据</p>
+        </div>
+        <ul id="ability-list" class="ability-list"></ul>
+      </section>
+
+      <footer id="advice-source">本地离线数据</footer>
+    </div>
+  </main>
+
+  <script src="../../node_modules/lucide/dist/umd/lucide.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
