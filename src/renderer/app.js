@@ -238,6 +238,67 @@ function renderAdvice(advice) {
   dom['skill-advice-reason'].textContent = skill?.reason ?? '等待当前英雄和分路';
 }
 
+function renderLineupAnalysis(lineup) {
+  const available = Boolean(lineup?.available);
+  dom['analysis-panel'].dataset.state = available ? 'ready' : 'empty';
+  dom['analysis-coverage'].textContent = lineup?.coverageNote ?? '敌方阵容尚未确认 0/5';
+  dom['lineup-summary'].textContent = lineup?.summary ?? '补全敌方英雄后会生成针对策略';
+
+  dom['lineup-threats'].replaceChildren(...(lineup?.threats ?? []).map((threat) => {
+    const chip = document.createElement('span');
+    chip.className = 'threat-chip';
+    chip.textContent = `${threat.label} · ${threat.count}`;
+    chip.title = `${threat.detail}：${threat.heroNames.join('、')}`;
+    return chip;
+  }));
+
+  const priorities = lineup?.priorities ?? [];
+  if (priorities.length) {
+    dom['lineup-priorities'].replaceChildren(...priorities.map((priority, index) => {
+      const row = document.createElement('li');
+      const order = document.createElement('span');
+      const copy = document.createElement('div');
+      const title = document.createElement('strong');
+      const text = document.createElement('p');
+      order.className = 'analysis-index';
+      order.textContent = String(index + 1).padStart(2, '0');
+      title.textContent = priority.title;
+      text.textContent = priority.text;
+      copy.append(title, text);
+      row.append(order, copy);
+      return row;
+    }));
+  } else {
+    const empty = document.createElement('li');
+    empty.className = 'analysis-empty';
+    empty.textContent = '等待敌方阵容信息';
+    dom['lineup-priorities'].replaceChildren(empty);
+  }
+
+  dom['enemy-breakdown'].replaceChildren(...(lineup?.enemyBreakdown ?? []).map((enemy) => {
+    const row = document.createElement('section');
+    const heading = document.createElement('div');
+    const name = document.createElement('strong');
+    const level = document.createElement('span');
+    const tags = document.createElement('p');
+    const reason = document.createElement('p');
+    const matchup = document.createElement('small');
+    row.className = 'enemy-analysis-row';
+    name.textContent = enemy.heroName;
+    level.textContent = enemy.level;
+    level.dataset.level = enemy.level;
+    heading.append(name, level);
+    tags.className = 'enemy-tags';
+    tags.textContent = enemy.tags.length ? enemy.tags.join(' · ') : '常规机制';
+    reason.textContent = enemy.reason;
+    matchup.textContent = enemy.matchup
+      ? `对位${enemy.matchup.level} · ${Math.round(enemy.matchup.winRate * 100)}% / ${enemy.matchup.matches} 场`
+      : '暂无足够对位样本';
+    row.append(heading, tags, reason, matchup);
+    return row;
+  }));
+}
+
 function findHeroId(value) {
   const normalized = String(value ?? '').trim().toLocaleLowerCase('zh-CN');
   if (!normalized) return null;
@@ -347,6 +408,7 @@ function renderMatch(nextViewModel) {
   renderGoal(snapshot);
   renderEvents();
   renderRoster(roster);
+  renderLineupAnalysis(advice?.lineup);
   renderAdvice(advice);
 }
 

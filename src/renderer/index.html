@@ -100,6 +100,25 @@
             <datalist id="hero-options"></datalist>
           </article>
 
+          <article class="panel analysis-panel" id="analysis-panel" data-state="empty">
+            <header class="panel-header">
+              <span>敌方阵容分析</span>
+              <code id="analysis-coverage">敌方阵容尚未确认 0/5</code>
+            </header>
+            <div class="analysis-layout">
+              <section class="analysis-overview">
+                <span class="advice-label"><i data-lucide="scan-search"></i>整体判断</span>
+                <p id="lineup-summary">补全敌方英雄后会生成针对策略</p>
+                <div class="threat-list" id="lineup-threats"></div>
+              </section>
+              <section class="analysis-priority">
+                <span class="advice-label"><i data-lucide="route"></i>本局执行</span>
+                <ol id="lineup-priorities"></ol>
+              </section>
+            </div>
+            <div class="enemy-breakdown" id="enemy-breakdown"></div>
+          </article>
+
           <article class="panel advice-panel">
             <header class="panel-header"><span>实时建议</span><label class="role-control"><span>分路</span><select id="role-select" aria-label="选择分路"><option value="auto">自动判断</option></select></label></header>
             <div class="advice-grid">

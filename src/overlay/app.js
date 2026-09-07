@@ -39,6 +39,36 @@ function createAbilityRow(ability, recommendedName) {
   return row;
 }
 
+function renderLineupAnalysis(lineup) {
+  const available = Boolean(lineup?.available);
+  dom['overlay-analysis'].dataset.state = available ? 'ready' : 'empty';
+  dom['overlay-analysis-coverage'].textContent = lineup?.coverageNote ?? '尚未确认 0/5';
+  dom['overlay-lineup-summary'].textContent = lineup?.summary ?? '补全敌方英雄后会生成针对策略';
+  dom['overlay-threats'].replaceChildren(...(lineup?.threats ?? []).slice(0, 4).map((threat) => {
+    const chip = document.createElement('span');
+    chip.textContent = `${threat.label} · ${threat.count}`;
+    return chip;
+  }));
+
+  const priorities = (lineup?.priorities ?? []).slice(0, 2);
+  if (priorities.length) {
+    dom['overlay-priorities'].replaceChildren(...priorities.map((priority) => {
+      const row = document.createElement('li');
+      const title = document.createElement('strong');
+      const text = document.createElement('span');
+      title.textContent = priority.title;
+      text.textContent = priority.text;
+      row.append(title, text);
+      return row;
+    }));
+  } else {
+    const empty = document.createElement('li');
+    empty.className = 'empty-analysis';
+    empty.textContent = '请在主窗口补全敌方英雄';
+    dom['overlay-priorities'].replaceChildren(empty);
+  }
+}
+
 function render(viewModel) {
   const { status, snapshot, advice, roster } = viewModel ?? {};
   const live = Boolean(status?.connected && snapshot);
@@ -55,6 +85,7 @@ function render(viewModel) {
   dom['enemy-coverage'].textContent = `${number(roster?.enemyCount)} / 5`;
   const enemyNames = roster?.enemies?.filter(Boolean).map((hero) => hero.nameZh) ?? [];
   dom['enemy-heroes'].textContent = enemyNames.length ? enemyNames.join('、') : '请在主窗口补全阵容';
+  renderLineupAnalysis(advice?.lineup);
 
   const itemAdvice = advice?.items;
   dom['item-phase'].textContent = itemAdvice ? `${itemAdvice.phaseLabel} · ${itemAdvice.role?.label ?? '自动'}` : '暂无数据';

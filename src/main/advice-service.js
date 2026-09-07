@@ -3,7 +3,7 @@
 const catalog = require('../data/dota.zh-CN.json');
 const meta = require('../data/meta-builds.json');
 const { RosterState } = require('./roster-state');
-const { analyzeThreats } = require('./threat-analyzer');
+const { analyzeThreats, buildLineupAnalysis } = require('./threat-analyzer');
 
 const PHASES = [
   { key: 'starting', label: '出门', until: 0 },
@@ -281,6 +281,15 @@ class AdviceService {
     };
   }
 
+  buildLineupAdvice(snapshot, roster, roleInfo, itemAdvice) {
+    const enemyHeroes = roster.enemies.filter(Boolean)
+      .map((slot) => this.heroById.get(slot.heroId))
+      .filter(Boolean);
+    const threatAnalysis = analyzeThreats(enemyHeroes, roleInfo.selected, this.itemByName);
+    const matchups = itemAdvice?.matchups ?? this.matchupAdvice(snapshot.hero.id, enemyHeroes);
+    return buildLineupAnalysis(enemyHeroes, threatAnalysis.threats, matchups, roleInfo.selected);
+  }
+
   decorate(viewModel) {
     if (!viewModel?.snapshot) return { ...viewModel, advice: null, roster: null };
     const snapshot = viewModel.snapshot;
@@ -306,13 +315,15 @@ class AdviceService {
     };
     const roster = this.localizeRoster(this.rosterState.get(snapshot));
     const role = this.resolveRole(Number(snapshot.hero.id));
+    const itemAdvice = this.buildItemAdvice(snapshot, roster, role);
 
     return {
       ...viewModel,
       snapshot: localizedSnapshot,
       roster,
       advice: {
-        items: this.buildItemAdvice(snapshot, roster, role),
+        items: itemAdvice,
+        lineup: this.buildLineupAdvice(snapshot, roster, role, itemAdvice),
         skill: this.buildSkillAdvice(snapshot, localizedAbilities, role),
         catalogGeneratedAt: catalog.generatedAt,
         metaGeneratedAt: meta.generatedAt,

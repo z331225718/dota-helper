@@ -48,6 +48,31 @@ test('uses timely high-MMR build data and lineup-specific counters', () => {
   assert.match(result.advice.skill.reason, /高分局/);
 });
 
+test('turns a confirmed enemy lineup into visible strategic analysis', () => {
+  const service = new AdviceService();
+  ['windrunner', 'riki', 'abaddon', 'phantom_lancer', 'lion'].forEach((name, index) => {
+    service.setRosterSlot('enemies', index, heroId(name));
+  });
+  const result = service.decorate({ status: { connected: true }, snapshot: clinkzSnapshot() });
+
+  assert.equal(result.advice.lineup.available, true);
+  assert.equal(result.advice.lineup.enemyCount, 5);
+  assert.equal(result.advice.lineup.enemyBreakdown.length, 5);
+  assert.ok(result.advice.lineup.threats.some((threat) => threat.label === '隐身'));
+  assert.ok(result.advice.lineup.priorities.length >= 2);
+  assert.match(result.advice.lineup.summary, /阵容/);
+  assert.equal(result.advice.lineup.coverageNote, '敌方阵容已确认 5/5');
+});
+
+test('explains when enemy lineup data is unavailable', () => {
+  const service = new AdviceService();
+  const result = service.decorate({ status: { connected: true }, snapshot: clinkzSnapshot() });
+
+  assert.equal(result.advice.lineup.available, false);
+  assert.equal(result.advice.lineup.enemyCount, 0);
+  assert.match(result.advice.lineup.summary, /补全/);
+});
+
 test('falls back instead of inventing advice for an unknown hero', () => {
   const service = new AdviceService();
   const snapshot = clinkzSnapshot();

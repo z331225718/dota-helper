@@ -94,7 +94,7 @@ button { color: inherit; }
 .phase { justify-self: end; display: flex; align-items: center; gap: 7px; color: var(--muted); font-size: 11px; }
 .phase svg { width: 16px; color: var(--amber); }
 
-.dashboard-grid { display: grid; grid-template-columns: 1.35fr .8fr 1fr; grid-template-areas: "hero economy inventory" "roster roster inventory" "advice advice inventory" "goal timeline timeline"; gap: 12px; }
+.dashboard-grid { display: grid; grid-template-columns: 1.35fr .8fr 1fr; grid-template-areas: "hero economy inventory" "roster roster inventory" "analysis analysis inventory" "advice advice inventory" "goal timeline timeline"; gap: 12px; }
 .panel { min-width: 0; border: 1px solid var(--line); border-radius: 6px; background: rgba(20,26,24,.92); box-shadow: 0 12px 32px rgba(0,0,0,.16); }
 .panel-header { display: flex; align-items: center; justify-content: space-between; min-height: 42px; padding: 0 15px; border-bottom: 1px solid var(--line); color: var(--muted); font-size: 11px; text-transform: uppercase; }
 .panel-header code { color: var(--faint); font-size: 9px; }
@@ -102,6 +102,7 @@ button { color: inherit; }
 .economy-panel { grid-area: economy; }
 .inventory-panel { grid-area: inventory; }
 .roster-panel { grid-area: roster; }
+.analysis-panel { grid-area: analysis; }
 .advice-panel { grid-area: advice; }
 .next-goal-panel { grid-area: goal; min-height: 190px; }
 .timeline-panel { grid-area: timeline; min-height: 190px; }
@@ -153,6 +154,31 @@ button { color: inherit; }
 .roster-slot input:disabled { opacity: 1; border-color: #315343; color: var(--text); cursor: default; }
 .roster-slot small { position: absolute; right: 4px; bottom: -13px; color: var(--jade); font-size: 7px; pointer-events: none; }
 .roster-note { min-height: 25px; margin: 0; padding: 3px 15px 10px; color: var(--faint); font-size: 9px; line-height: 1.4; }
+
+.analysis-layout { display: grid; grid-template-columns: 1fr 1fr; border-bottom: 1px solid var(--line); }
+.analysis-layout > section { min-width: 0; padding: 14px 16px; }
+.analysis-layout > section + section { border-left: 1px solid var(--line); }
+#lineup-summary { margin: 10px 0 9px; color: var(--text); font-size: 12px; line-height: 1.55; }
+.analysis-panel[data-state="empty"] #lineup-summary { color: var(--muted); }
+.threat-list { display: flex; flex-wrap: wrap; gap: 5px; min-height: 22px; }
+.threat-chip { padding: 4px 7px; border: 1px solid #5f3432; background: #1b1514; color: #ffc9c5; font-size: 8px; }
+.analysis-priority ol { display: grid; gap: 7px; margin: 10px 0 0; padding: 0; list-style: none; }
+.analysis-priority li { display: grid; grid-template-columns: 25px minmax(0, 1fr); gap: 8px; align-items: start; }
+.analysis-index { display: grid; place-items: center; width: 23px; height: 23px; border: 1px solid var(--jade-dark); color: var(--jade); font-family: Consolas, monospace; font-size: 8px; }
+.analysis-priority strong { display: block; color: var(--text); font-size: 10px; }
+.analysis-priority p { margin: 3px 0 0; color: var(--muted); font-size: 9px; line-height: 1.45; }
+.analysis-empty { display: block !important; color: var(--faint); font-size: 9px; }
+.enemy-breakdown { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.enemy-analysis-row { min-width: 0; padding: 11px 12px; }
+.enemy-analysis-row + .enemy-analysis-row { border-left: 1px solid var(--line); }
+.enemy-analysis-row > div { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+.enemy-analysis-row strong { min-width: 0; overflow: hidden; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+.enemy-analysis-row > div span { flex: 0 0 auto; padding: 2px 4px; border: 1px solid var(--line); color: var(--muted); font-size: 7px; }
+.enemy-analysis-row > div span[data-level="高威胁"] { border-color: #6b3431; color: var(--red); }
+.enemy-analysis-row > div span[data-level="需留意"] { border-color: #735f32; color: var(--amber); }
+.enemy-analysis-row p { margin: 7px 0 0; color: var(--muted); font-size: 8px; line-height: 1.45; }
+.enemy-analysis-row .enemy-tags { color: var(--red); }
+.enemy-analysis-row small { display: block; margin-top: 7px; color: var(--faint); font-size: 7px; }
 
 .advice-grid { display: grid; grid-template-columns: 1.15fr .85fr; min-height: 132px; }
 .advice-grid > section { min-width: 0; padding: 15px 16px; }
@@ -247,7 +273,7 @@ body.compact .topbar { grid-template-columns: 1fr auto; }
 body.compact .connection-pill { display: none; }
 body.compact .workspace { padding: 12px; }
 body.compact .match-strip { min-height: 72px; }
-body.compact .dashboard-grid { grid-template-columns: 1fr 1fr; grid-template-areas: "hero economy" "roster roster" "advice advice" "goal inventory" "timeline timeline"; }
+body.compact .dashboard-grid { grid-template-columns: 1fr 1fr; grid-template-areas: "hero economy" "roster roster" "analysis analysis" "advice advice" "goal inventory" "timeline timeline"; }
 body.compact .hero-panel { min-height: 276px; }
 body.compact .hero-identity { gap: 10px; padding-inline: 12px; }
 body.compact .hero-monogram { width: 38px; font-size: 14px; }
@@ -259,7 +285,11 @@ body.compact .combat-stats span { font-size: 7px; white-space: nowrap; }
 body.compact .planner-layout, body.compact .setup-layout { grid-template-columns: 1fr; }
 
 @media (max-width: 980px) {
-  .dashboard-grid { grid-template-columns: 1fr 1fr; grid-template-areas: "hero economy" "roster roster" "advice advice" "inventory goal" "timeline timeline"; }
+  .dashboard-grid { grid-template-columns: 1fr 1fr; grid-template-areas: "hero economy" "roster roster" "analysis analysis" "advice advice" "inventory goal" "timeline timeline"; }
+  .enemy-breakdown { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .enemy-analysis-row + .enemy-analysis-row { border-left: 0; }
+  .enemy-analysis-row:nth-child(even) { border-left: 1px solid var(--line); }
+  .enemy-analysis-row:nth-child(n+3) { border-top: 1px solid var(--line); }
   .planner-layout, .setup-layout { grid-template-columns: 1fr; }
 }
 
@@ -267,13 +297,18 @@ body.compact .planner-layout, body.compact .setup-layout { grid-template-columns
   .topbar { grid-template-columns: 1fr auto; }
   .connection-pill { display: none; }
   .workspace { padding: 12px; }
-  .dashboard-grid { grid-template-columns: 1fr; grid-template-areas: "hero" "economy" "roster" "advice" "inventory" "goal" "timeline"; }
+  .dashboard-grid { grid-template-columns: 1fr; grid-template-areas: "hero" "economy" "roster" "analysis" "advice" "inventory" "goal" "timeline"; }
   .match-strip { grid-template-columns: 1fr auto; }
   .scoreboard { display: none; }
   .goal-form { grid-template-columns: 1fr; }
   .advice-grid { grid-template-columns: 1fr; }
   .advice-grid > section + section { border-left: 0; border-top: 1px solid var(--line); }
   .roster-editor { grid-template-columns: 1fr; }
+  .analysis-layout { grid-template-columns: 1fr; }
+  .analysis-layout > section + section { border-left: 0; border-top: 1px solid var(--line); }
+  .enemy-breakdown { grid-template-columns: 1fr; }
+  .enemy-analysis-row:nth-child(even) { border-left: 0; }
+  .enemy-analysis-row + .enemy-analysis-row { border-top: 1px solid var(--line); }
   .roster-slots { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 16px; }
   .primary-button { align-self: auto; }
 }
